@@ -1,0 +1,8 @@
+[package]
+name = "three_sum_practice"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+# cargo test --features sol_01  runs the same tests against sol_01.rs
+sol_01 = []
