@@ -48,6 +48,11 @@ fn main() {
         println!("Current node: {}", node.val);
         current = node.next.as_ref();
     }
+
+    for (a, b) in [(vec![2, 4, 3], vec![5, 6, 4]), (vec![9, 9], vec![1])] {
+        let sum = Solution::add_two_numbers(from_digits(&a), from_digits(&b));
+        println!("{a:?} + {b:?} = {:?}", to_digits(&sum));
+    }
 }
 
 #[cfg(test)]
