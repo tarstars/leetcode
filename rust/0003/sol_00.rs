@@ -6,20 +6,20 @@ impl Solution {
         let s = ss.as_bytes();
         let n = s.len();
         let mut q: usize = 0;
-        let mut windowChars: HashSet<u8> = std::collections::HashSet::new();
-        let mut maxAns: i32 = 0;
+        let mut window_chars: HashSet<u8> = std::collections::HashSet::new();
+        let mut max_ans: i32 = 0;
 
         for p in 0..n {
-            while q < n && !windowChars.contains(&s[q]) {
-                windowChars.insert(s[q]);
+            while q < n && !window_chars.contains(&s[q]) {
+                window_chars.insert(s[q]);
                 q+=1;
             }
-            if windowChars.len() as i32 > maxAns {
-                maxAns = windowChars.len() as i32;
+            if window_chars.len() as i32 > max_ans {
+                max_ans = window_chars.len() as i32;
             }
-            windowChars.remove(&s[p]);
+            window_chars.remove(&s[p]);
         }
 
-        maxAns
+        max_ans
     }
 }

@@ -12,21 +12,21 @@ impl Solution {
         let n: i32 = (s.len()*2 + 1) as i32;
         let b = s.as_bytes();
 
-        let mut bestCenter: i32 = 0;
-        let mut bestLength: i32 = 0;
+        let mut best_center: i32 = 0;
+        let mut best_length: i32 = 0;
 
         for p in 0i32..n {
             let mut r: i32 = 0;
             while p - r - 1  >= 0 && p + r + 1 < n && c(b, p - r - 1) == c(b, p + r + 1) {
                 r = r + 1;
             }
-            if r > bestLength {
-                bestLength = r;
-                bestCenter = p;
+            if r > best_length {
+                best_length = r;
+                best_center = p;
             } 
         }
 
-        let start = ((bestCenter - bestLength) / 2) as usize;
-        s[start..start + bestLength as usize].to_string()
+        let start = ((best_center - best_length) / 2) as usize;
+        s[start..start + best_length as usize].to_string()
     }
 }
