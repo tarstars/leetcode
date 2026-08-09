@@ -1,0 +1,383 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{listings}
+
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{truecell}{HTML}{D6E9D5}
+\definecolor{falsecell}{HTML}{F2F2F2}
+\definecolor{codebg}{HTML}{F7F7F7}
+
+\titleformat{\section}{\large\bfseries\color{accent}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{accent}}{\thesubsection}{0.8em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small\color{accent}LeetCode 10 --- Regular Expression Matching}
+\lfoot{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\lstdefinelanguage{Rust}{
+  morekeywords={fn,let,mut,match,enum,struct,impl,for,in,if,else,return,true,false,
+                self,Self,bool,u8,usize,pub,use,vec,as,where},
+  sensitive=true,
+  morecomment=[l]{//},
+  morestring=[b]",
+}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{accent}\bfseries,
+  commentstyle=\color{gray},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{gray!40},
+  framesep=6pt,
+  breaklines=true,
+  showstringspaces=false,
+  language=C,
+}
+
+\newcommand{\T}{\cellcolor{truecell}\textbf{T}}
+\newcommand{\F}{\cellcolor{falsecell}F}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{accent} Regular Expression Matching}\\[2pt]
+  {\large A dynamic programming approach}\\[6pt]
+  {\small Supporting \texttt{.} (any single character) and \texttt{*} (zero or more of the preceding element)}
+\end{center}
+
+\vspace{4pt}
+\hrule
+\vspace{10pt}
+
+\section{The problem}
+
+Given a string $s$ and a pattern $p$, decide whether $p$ matches \emph{all} of $s$. The pattern
+language has exactly two metacharacters:
+
+\begin{itemize}
+  \item \texttt{.} matches any single character;
+  \item \texttt{*} matches zero or more copies of \emph{the element immediately before it}.
+\end{itemize}
+
+The second rule is the whole difficulty. A \texttt{*} is never a token on its own --- it always
+forms a pair with the character to its left, and that pair may consume $0, 1, 2, \dots$ characters
+of $s$. Since the right choice is not knowable locally, a greedy left-to-right scan cannot work.
+For instance \texttt{"aaa"} against \texttt{"a*a"} matches only if \texttt{a*} takes two of the
+three \texttt{a}'s and \emph{gives the last one back} to the literal \texttt{a}.
+
+\section{The state}
+
+Let $m = |s|$ and $n = |p|$, and define a table of booleans of size $(m+1) \times (n+1)$:
+
+\[
+  \mathrm{dp}[i][j] \;=\;
+  \text{``the first $i$ characters of $s$ are matched by the first $j$ characters of $p$''.}
+\]
+
+The $+1$ in each dimension is essential: the empty prefix is a genuine state, and most of the
+interesting base cases live in row $0$. The answer to the problem is $\mathrm{dp}[m][n]$.
+
+Note the index convention that follows from this: cell $[i][j]$ talks about the characters
+$s[i-1]$ and $p[j-1]$, one-based in the table and zero-based in the strings.
+
+\section{Base cases}
+
+\begin{description}
+  \item[{$\mathrm{dp}[0][0] = \text{true}$.}] The empty pattern matches the empty string.
+  \item[{$\mathrm{dp}[i][0] = \text{false}$ for $i > 0$.}] A pattern with nothing left in it cannot
+        consume any character.
+  \item[{Row $0$ is the subtle one.}] A \emph{non-empty} pattern can still match the empty string,
+        but only by way of \texttt{x*} pairs that each choose zero occurrences:
+        \[
+          \mathrm{dp}[0][j] \;=\;
+          \begin{cases}
+            \mathrm{dp}[0][j-2] & \text{if } p[j-1] = \texttt{*}\\[2pt]
+            \text{false}        & \text{otherwise.}
+          \end{cases}
+        \]
+        Skipping this row is the classic bug: it is what makes \texttt{"aab"} against
+        \texttt{"c*a*b"} fail, because the leading \texttt{c*} must be allowed to vanish.
+\end{description}
+
+\section{The transition}
+
+Everything is decided by looking at the last pattern character, $p[j-1]$.
+
+\subsection*{Case 1 --- an ordinary character or \texttt{.}}
+
+The pattern character must consume exactly one character of $s$, so both strings shrink by one:
+
+\[
+  \mathrm{dp}[i][j] \;=\; \mathrm{dp}[i-1][j-1] \;\wedge\;
+  \bigl(p[j-1] = \texttt{.} \;\vee\; p[j-1] = s[i-1]\bigr).
+\]
+
+\subsection*{Case 2 --- \texttt{*}}
+
+The star pairs with $p[j-2]$. Two independent readings, combined with \textbf{or}:
+
+\[
+  \mathrm{dp}[i][j] \;=\;
+  \underbrace{\mathrm{dp}[i][j-2]}_{\text{zero occurrences}}
+  \;\vee\;
+  \underbrace{\Bigl(\mathrm{dp}[i-1][j] \;\wedge\;
+    \bigl(p[j-2] = \texttt{.} \;\vee\; p[j-2] = s[i-1]\bigr)\Bigr)}_{\text{one more occurrence}}
+\]
+
+\begin{itemize}
+  \item \emph{Zero occurrences} throws the whole \texttt{x*} pair away --- hence the jump of
+        \textbf{two} columns, $j-2$, not one. The string index $i$ is untouched, because nothing
+        was consumed.
+  \item \emph{One more occurrence} consumes a single character of $s$ (so $i-1$) while
+        \emph{staying on the same star} (so $j$, unchanged). This is the cell directly above.
+\end{itemize}
+
+\section{Why ``zero or more'' needs no loop}
+
+A natural objection to the rule above: the star may swallow any number of characters, so surely we
+must try every count $k = 0, 1, 2, \dots$ and scan the rest of the string?
+
+We do --- but the scan is already inside the cell above us. Write $m_i$ for the predicate
+``$s[i-1]$ matches the starred element''. Unrolling the recurrence for Case 2 gives
+
+\[
+\begin{aligned}
+  \mathrm{dp}[i][j] \;=\;& \;\mathrm{dp}[i][j-2]
+    &&\text{(star eats 0)}\\
+  \vee\;& \; m_i \wedge \mathrm{dp}[i-1][j-2]
+    &&\text{(star eats 1)}\\
+  \vee\;& \; m_i \wedge m_{i-1} \wedge \mathrm{dp}[i-2][j-2]
+    &&\text{(star eats 2)}\\
+  \vee\;& \; m_i \wedge m_{i-1} \wedge m_{i-2} \wedge \mathrm{dp}[i-3][j-2]
+    &&\text{(star eats 3)}\\
+  \vee\;& \;\;\cdots
+\end{aligned}
+\]
+
+which is exactly the exhaustive scan over every possible repetition count. The point of the table
+is that we never write that loop: $\mathrm{dp}[i-1][j]$ already summarises the entire tail of the
+disjunction, computed one row earlier. Each cell therefore costs $O(1)$ instead of $O(m)$.
+
+This is also where the exponential blow-up of naive backtracking disappears. ``Give a character
+back'' is not an undo operation --- it is simply the other branch of an \textbf{or} whose value has
+already been computed and stored.
+
+\section{A worked example}
+
+Take $s = \texttt{"aab"}$ and $p = \texttt{"c*a*b"}$. Rows are prefixes of $s$, columns are
+prefixes of $p$; $\varepsilon$ denotes the empty prefix.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{r|cccccc}
+  & $\varepsilon$ & \texttt{c} & \texttt{*} & \texttt{a} & \texttt{*} & \texttt{b}\\
+  \midrule
+  $\varepsilon$ & \T & \F & \T & \F & \T & \F\\
+  \texttt{a}    & \F & \F & \F & \T & \T & \F\\
+  \texttt{a}    & \F & \F & \F & \F & \T & \F\\
+  \texttt{b}    & \F & \F & \F & \F & \F & \T\\
+\end{tabular}
+\end{center}
+
+Reading the interesting cells:
+
+\begin{itemize}
+  \item $\mathrm{dp}[0][2] = \text{T}$: the pair \texttt{c*} chooses zero occurrences, so an empty
+        pattern prefix remains and $\mathrm{dp}[0][0]$ is inherited.
+  \item $\mathrm{dp}[1][4] = \text{T}$: \texttt{a*} takes one \texttt{a}. Its neighbour
+        $\mathrm{dp}[2][4] = \text{T}$ takes two --- the same star, one row further down.
+  \item $\mathrm{dp}[3][5] = \text{T}$: the literal \texttt{b} matches $s[2]$, inheriting from
+        $\mathrm{dp}[2][4]$ diagonally. That cell is the answer.
+  \item Column \texttt{c} is entirely false, as \texttt{c} occurs nowhere in $s$; the pattern
+        survives only because the star lets the pair vanish.
+\end{itemize}
+
+The backtracking case $s = \texttt{"aaa"}$, $p = \texttt{"a*a"}$ is worth tracing too:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{r|cccc}
+  & $\varepsilon$ & \texttt{a} & \texttt{*} & \texttt{a}\\
+  \midrule
+  $\varepsilon$ & \T & \F & \T & \F\\
+  \texttt{a}    & \F & \T & \T & \T\\
+  \texttt{a}    & \F & \F & \T & \T\\
+  \texttt{a}    & \F & \F & \T & \T\\
+\end{tabular}
+\end{center}
+
+The final column is the literal \texttt{a}. Each of its true cells inherits diagonally from the
+\texttt{*} column one row up --- i.e.\ the star stopped one character early, of its own accord.
+No backtracking machinery was needed.
+
+\section{A better shape: tokenise the pattern first}
+
+Everything above works on the raw characters of $p$, and pays for it in two places: the inner loop
+must \emph{look ahead} to discover whether the next character is a \texttt{*}, and the
+zero-occurrence branch has to jump $j-2$ columns. Both awkwardnesses come from the same source ---
+a \texttt{*} is not a thing in its own right, it is a \emph{quantifier attached to the element
+before it}.
+
+So parse the pattern once, into a list of tokens:
+
+\begin{lstlisting}[language=Rust]
+enum Elem { Char(u8), Dot }             // what can match one character
+enum Tok  { One(Elem), Star(Elem) }     // ...and how many times
+\end{lstlisting}
+
+The parse is a single left-to-right pass: read an element, peek at the next byte, and if it is
+\texttt{*} consume that too and emit \texttt{Star} instead of \texttt{One}. It is $O(n)$ and, given
+the problem's guarantee that every \texttt{*} has a preceding element, it cannot fail.
+
+Note that \texttt{*} is deliberately \emph{not} a third variant of \texttt{Tok}. Making it one
+would leave invalid patterns representable --- a leading star, or two in a row --- and every later
+stage would have to defend against states the parser should have ruled out.
+
+\subsection*{The recurrence, restated}
+
+Let $t$ be the token list. \textbf{The second dimension of the table is now the number of tokens,
+not the number of pattern characters} --- this is the substantive change, and it is worth stating
+plainly. Write
+\[
+  n' \;=\; |t| \;=\; n - \#\{\texttt{*} \text{ in } p\},
+\]
+since every star merges into the element on its left instead of occupying a column of its own. For
+$p = \texttt{"c*a*b"}$ that is $n = 5$ pattern characters but only $n' = 3$ tokens:
+$\texttt{c*}$, $\texttt{a*}$, $\texttt{b}$.
+
+The table is therefore $(m+1) \times (n'+1)$, and each column is one token rather than one pattern
+character. Cell $[i][j]$ now reads: ``the first $i$ characters of $s$ are matched by the first $j$
+\emph{tokens} of the pattern.''
+
+\[
+  \mathrm{dp}[i][j] =
+  \begin{cases}
+    \mathrm{dp}[i-1][j-1] \wedge e.\mathrm{matches}(s[i-1])
+      & \text{if } t[j-1] = \texttt{One}(e)\\[4pt]
+    \mathrm{dp}[i][j-1] \;\vee\;
+      \bigl(\mathrm{dp}[i-1][j] \wedge e.\mathrm{matches}(s[i-1])\bigr)
+      & \text{if } t[j-1] = \texttt{Star}(e)
+  \end{cases}
+\]
+
+with $\mathrm{dp}[0][0] = \text{true}$ and row $0$ collapsing to
+$\mathrm{dp}[0][j] = \texttt{star}(t[j-1]) \wedge \mathrm{dp}[0][j-1]$.
+
+The improvement is not cosmetic:
+
+\begin{itemize}
+  \item the zero-occurrence case is now $j-1$, not $j-2$ --- skipping a token \emph{is} one step
+        back --- which removes the \texttt{usize} underflow hazard entirely;
+  \item the lookahead disappears from the inner loop; the token already knows whether it is
+        starred;
+  \item row $0$ becomes a one-liner;
+  \item the two cases are variants of an \texttt{enum}, so \texttt{match} makes them exhaustive and
+        the compiler checks that nothing was forgotten.
+\end{itemize}
+
+\subsection*{The same examples, over tokens}
+
+$s = \texttt{"aab"}$, $p = \texttt{"c*a*b"}$, which tokenises to
+$[\texttt{c*},\; \texttt{a*},\; \texttt{b}]$ --- five columns become three:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{r|cccc}
+  & $\varepsilon$ & \texttt{c*} & \texttt{a*} & \texttt{b}\\
+  \midrule
+  $\varepsilon$ & \T & \T & \T & \F\\
+  \texttt{a}    & \F & \F & \T & \F\\
+  \texttt{a}    & \F & \F & \T & \F\\
+  \texttt{b}    & \F & \F & \F & \T\\
+\end{tabular}
+\end{center}
+
+and $s = \texttt{"aaa"}$, $p = \texttt{"a*a"}$, tokenising to $[\texttt{a*},\; \texttt{a}]$:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{r|ccc}
+  & $\varepsilon$ & \texttt{a*} & \texttt{a}\\
+  \midrule
+  $\varepsilon$ & \T & \T & \F\\
+  \texttt{a}    & \F & \T & \T\\
+  \texttt{a}    & \F & \T & \T\\
+  \texttt{a}    & \F & \T & \T\\
+\end{tabular}
+\end{center}
+
+Same answers, narrower tables, and no column ever holds a bare \texttt{*}. Row $0$ is now readable
+at a glance: it stays true exactly as long as the tokens keep being starred.
+
+\section{Complexity}
+
+Every cell is filled in constant time, so the character-level table runs in $O(mn)$ time and
+$O(mn)$ space. With the problem's limits of $m, n \le 20$ that is at most $21 \times 21 = 441$
+cells.
+
+Over tokens the bound is $O(m n')$, with $n' \le n$: tokenising adds one $O(n)$ pass up front and
+then shrinks every dimension that follows, because each \texttt{x*} pair costs one column instead
+of two. Same asymptotic class, strictly fewer cells --- for $p = \texttt{"c*a*b"}$, $4 \times 4$
+instead of $4 \times 6$.
+
+Space can be reduced to $O(n')$ by keeping only the previous row, since the \texttt{One} case reads
+row $i-1$ and the \texttt{Star} case reads row $i-1$ and row $i$. It is rarely worth the loss of
+clarity at this size.
+
+For comparison, a recursive matcher without memoisation is exponential. The pattern
+
+\begin{center}
+\texttt{a*a*a*a*a*a*a*a*a*b}
+\end{center}
+
+\noindent
+against twenty \texttt{a}'s explores an enormous number of ways to split the string among the nine
+stars before concluding that the trailing \texttt{b} can never match.
+
+\section{Notes for a Rust implementation}
+
+\begin{itemize}
+  \item Work over \texttt{s.as\_bytes()} and \texttt{p.as\_bytes()} and compare \texttt{u8} values
+        against \texttt{b'*'} and \texttt{b'.'}. The input is ASCII, and byte slices give $O(1)$
+        indexing that \texttt{String} deliberately does not.
+  \item Give \texttt{Elem} the matching rule as an inherent method, so the DP reads as prose:
+\begin{lstlisting}[language=Rust]
+impl Elem {
+    fn matches(&self, c: u8) -> bool {
+        match self { Elem::Dot => true, Elem::Char(x) => *x == c }
+    }
+}
+\end{lstlisting}
+  \item \texttt{vec![vec![false; n + 1]; m + 1]} is the natural table. A flat \texttt{Vec<bool>}
+        indexed by \texttt{i * (n + 1) + j} avoids the pointer indirection if you prefer.
+  \item Indices are \texttt{usize}, so a subtraction that goes below zero \emph{panics} rather than
+        wrapping to a negative number. Driving the loops as \texttt{for i in 0..=m} /
+        \texttt{for j in 1..=n} keeps every $j-1$ well defined --- and with tokens there is no
+        $j-2$ left to worry about.
+  \item Fill order matters: row $0$ first (left to right), then rows $1$ through $m$. The
+        \texttt{Star} case reads $\mathrm{dp}[i][j-1]$ from the current row, which must already be
+        filled to its left.
+  \item Matching on a pair of tokens is where Rust's \texttt{match} earns its keep: write
+        \texttt{match \&tokens[j - 1] \{ Tok::One(e) => ..., Tok::Star(e) => ... \}} and the
+        compiler guarantees both cases are handled.
+\end{itemize}
+
+\vspace{6pt}
+\hrule
+\vspace{4pt}
+\begin{center}\small
+  \textit{All four example tables in this document were produced by running the recurrence, not by hand.}
+\end{center}
+
+\end{document}

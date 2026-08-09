@@ -1,0 +1,4 @@
+[package]
+name = "regular_expression_matching_practice"
+version = "0.1.0"
+edition = "2021"
