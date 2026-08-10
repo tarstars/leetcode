@@ -1,0 +1,4 @@
+[package]
+name = "remove_nth_from_end_practice"
+version = "0.1.0"
+edition = "2021"

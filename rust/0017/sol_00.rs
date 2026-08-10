@@ -1,5 +1,3 @@
-use std::env::current_exe;
-
 use crate::Solution;
 
 impl Solution {
@@ -18,7 +16,7 @@ impl Solution {
 
         for current_digit in digits.bytes() {
             if current_digit != b'1' {
-                let mut prev = ret;
+                let prev = ret;
                 ret = vec![];
                 for digit in dec[(current_digit - b'0') as usize].chars() {
                     for cluster in &prev {
