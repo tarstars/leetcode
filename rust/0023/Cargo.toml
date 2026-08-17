@@ -1,0 +1,4 @@
+[package]
+name = "merge_k_sorted_lists_practice"
+version = "0.1.0"
+edition = "2021"
