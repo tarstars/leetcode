@@ -1,0 +1,4 @@
+[package]
+name = "substring_with_concatenation_of_all_words_practice"
+version = "0.1.0"
+edition = "2021"

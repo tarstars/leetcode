@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 impl Solution {
     pub fn is_valid(s: String) -> bool {
-        let mut b:HashMap<char, i8> = HashMap::from([
+        let b:HashMap<char, i8> = HashMap::from([
             ('{', -1i8),
             ('}', 1),
             ('(', -2),

@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::Solution;
+use std::collections::HashMap;
 
 fn gp_helper(n: i32, hash: &mut HashMap<i32, Vec<String>>) -> Vec<String> {
         if n == 0 {
