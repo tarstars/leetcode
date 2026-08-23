@@ -6,7 +6,10 @@ struct Solution;
 fn main() {
     for (s, words) in [
         ("barfoothefoobarman", vec!["foo", "bar"]),
-        ("wordgoodgoodgoodbestword", vec!["word", "good", "best", "word"]),
+        (
+            "wordgoodgoodgoodbestword",
+            vec!["word", "good", "best", "word"],
+        ),
         ("barfoofoobarthefoobarman", vec!["bar", "foo", "the"]),
     ] {
         let words: Vec<String> = words.into_iter().map(String::from).collect();
@@ -55,7 +58,10 @@ mod tests {
     #[test]
     fn example_2() {
         assert_eq!(
-            find("wordgoodgoodgoodbestword", &["word", "good", "best", "word"]),
+            find(
+                "wordgoodgoodgoodbestword",
+                &["word", "good", "best", "word"]
+            ),
             vec![]
         );
     }
