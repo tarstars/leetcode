@@ -1,7 +1,7 @@
 #![allow(clippy::ptr_arg)] // LeetCode requires `&mut Vec<i32>`.
 
-#[path = "../sol_00.rs"]
-mod sol_00;
+#[path = "../../sol_01.rs"]
+mod sol_01;
 
 struct Solution;
 
@@ -14,4 +14,5 @@ fn main() {
 }
 
 #[cfg(test)]
+#[path = "../tests.rs"]
 mod tests;

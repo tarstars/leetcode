@@ -4,7 +4,7 @@ impl Solution {
     pub fn next_permutation(nums: &mut Vec<i32>) {
         let n = nums.len() as i32;
 
-        let mut p = (n - 2) as i32;
+        let mut p = n - 2;
         while p >= 0 && nums[p as usize] >= nums[(p + 1) as usize] {
             p -= 1;
         }
