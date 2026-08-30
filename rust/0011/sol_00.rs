@@ -6,7 +6,7 @@ impl Solution {
         let mut best_v = 0;
 
         let mut p: i32 = 0;
-        let mut q: i32 = n;
+        let mut q: i32 = n - 1;
 
         while p < q {
             let v = std::cmp::min(height[p as usize], height[q as usize]) * (q - p);

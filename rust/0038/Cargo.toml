@@ -1,0 +1,4 @@
+[package]
+name = "count_and_say_practice"
+version = "0.1.0"
+edition = "2021"
