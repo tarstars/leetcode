@@ -51,6 +51,7 @@
         "rust/0050/Cargo.toml",
         "rust/0051/Cargo.toml",
         "rust/0052/Cargo.toml",
-        "rust/0053/Cargo.toml"
+        "rust/0053/Cargo.toml",
+        "rust/0054/Cargo.toml"
     ]
 }
