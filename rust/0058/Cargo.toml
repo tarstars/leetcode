@@ -1,0 +1,4 @@
+[package]
+name = "length_of_last_word_practice"
+version = "0.1.0"
+edition = "2021"

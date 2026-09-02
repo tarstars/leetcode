@@ -1,7 +1,7 @@
+use crate::Solution;
+
 use std::collections::HashMap;
 use std::collections::VecDeque;
-
-use crate::Solution;
 
 #[derive(Debug, Default)]
 struct AhoNode {

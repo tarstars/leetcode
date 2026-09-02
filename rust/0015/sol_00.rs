@@ -1,6 +1,6 @@
-use std::collections::HashSet;
-
 use crate::Solution;
+
+use std::collections::HashSet;
 
 impl Solution {
     pub fn three_sum(mut nums: Vec<i32>) -> Vec<Vec<i32>> {
