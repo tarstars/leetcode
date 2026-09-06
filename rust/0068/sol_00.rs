@@ -1,5 +1,3 @@
-use std::cmp::max;
-
 use crate::Solution;
 
 struct RowStat {
@@ -10,7 +8,8 @@ struct RowStat {
 
 impl RowStat {
     fn justify_left(self: &Self, words: &Vec<String>, width: usize) -> String {
-        let picked: Vec<&str> = self.string_cluster
+        let picked: Vec<&str> = self
+            .string_cluster
             .iter()
             .map(|ind| words[*ind].as_str())
             .collect();
@@ -19,8 +18,30 @@ impl RowStat {
         format!("{join_words:<width$}")
     }
 
-    fn justify_center(self: &Self, words: &Vec<String>) -> String {
-        "".to_string()
+    fn justify_center(self: &Self, words: &Vec<String>, width: usize) -> String {
+        let words: Vec<&String> = self.string_cluster.iter().map(|&q| &words[q]).collect();
+        if words.len() == 1 {
+            let word = words[0].clone();
+            return format!("{word:<width$}");
+        }
+
+        let mut to_collect: Vec<String> = Vec::new();
+
+        to_collect.push(words[0].clone());
+        let n = words.len() - 1;
+        let base_num = self.free_space / n;
+        let num_incr = self.free_space % n;
+
+        for p in 0..n {
+            let mut v = base_num + 1;
+            if p < num_incr {
+                v += 1;
+            }
+            to_collect.push(" ".repeat(v));
+            to_collect.push(words[p + 1].clone());
+        }
+
+        to_collect.join("")
     }
 }
 
@@ -41,23 +62,31 @@ impl Solution {
                     row_space -= word.len() + 1;
                     row.push(ind);
                 } else {
-                    string_cluster.push(RowStat{string_cluster:row, free_space:row_space, last: false});
+                    string_cluster.push(RowStat {
+                        string_cluster: row,
+                        free_space: row_space,
+                        last: false,
+                    });
                     row_space = max_width - word.len();
                     row = vec![ind];
                 }
             }
-        } 
-        string_cluster.push(RowStat{string_cluster:row, free_space:row_space, last: true});
+        }
+        string_cluster.push(RowStat {
+            string_cluster: row,
+            free_space: row_space,
+            last: true,
+        });
 
         string_cluster
             .iter()
-            .map(|row| if row.last || row.string_cluster.len() == 1 
-                                    {
-                                        row.justify_left(&words, max_width)
-                                    } else {
-                                        row.justify_center(&words)  
-                                    }
-                                    )
+            .map(|row| {
+                if row.last || row.string_cluster.len() == 1 {
+                    row.justify_left(&words, max_width)
+                } else {
+                    row.justify_center(&words, max_width)
+                }
+            })
             .collect()
     }
 }
