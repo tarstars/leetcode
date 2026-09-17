@@ -1,0 +1,4 @@
+[package]
+name = "largest_rectangle_in_histogram_practice"
+version = "0.1.0"
+edition = "2021"
