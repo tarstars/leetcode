@@ -92,7 +92,7 @@ impl Rng {
         let split = 1 + self.below(s.len() as u64 - 1);
         let left = self.scramble(&s[..split]);
         let right = self.scramble(&s[split..]);
-        if self.next_value() % 2 == 0 {
+        if self.next_value().is_multiple_of(2) {
             format!("{left}{right}")
         } else {
             format!("{right}{left}")
