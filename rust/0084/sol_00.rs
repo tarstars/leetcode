@@ -9,9 +9,9 @@ impl Solution {
 
         for (pos, v) in heights.iter().enumerate() {
             while !st.is_empty() && st.last().unwrap().1 > *v {
-                let (ppos, pv) = st.pop().unwrap();
+                let (_ppos, pv) = st.pop().unwrap();
                 match st.last() {
-                    Some((pppos, ppv)) => {
+                    Some((pppos, _ppv)) => {
                         largest_area = max(largest_area, (pos as i32 - pppos - 1) * pv);
                     }
                     _ => {
@@ -23,9 +23,9 @@ impl Solution {
         }
 
         while !st.is_empty() {
-            let (pos, v) = st.pop().unwrap();
+            let (_pos, v) = st.pop().unwrap();
             match st.last() {
-                Some((ppos, pv)) => {
+                Some((ppos, _pv)) => {
                     largest_area = max(largest_area, (heights.len() as i32 - ppos - 1) * v);
                 }
                 _ => {
