@@ -87,7 +87,8 @@
         "rust/0086/Cargo.toml",
         "rust/0087/Cargo.toml",
         "rust/0088/Cargo.toml",
-        "rust/0089/Cargo.toml"
+        "rust/0089/Cargo.toml",
+        "rust/0090/Cargo.toml"
     ],
     "[rust]": {
         "editor.defaultFormatter": "rust-lang.rust-analyzer",
