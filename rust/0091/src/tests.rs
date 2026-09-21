@@ -175,7 +175,7 @@ fn runs_of_ones_are_fibonacci() {
 /// an unpairable digit. 19,530 strings.
 #[test]
 fn every_short_string() {
-    const ALPHABET: [u8; 5] = [b'0', b'1', b'2', b'6', b'7'];
+    const ALPHABET: [u8; 5] = *b"01267";
 
     let mut checked = 0;
     for len in 1..=6usize {
