@@ -10,9 +10,21 @@ use std::rc::Rc;
 //   pub right: Option<Rc<RefCell<TreeNode>>>,
 // }
 
+fn helper_inorder(root: &Option<Rc<RefCell<TreeNode>>>, inorder_values: &mut Vec<i32>) {
+    if let Some(node) = root {
+        let bnode = &node.borrow();
+        helper_inorder(&bnode.left, inorder_values);
+        inorder_values.push(bnode.val);
+        helper_inorder(&bnode.right, inorder_values);
+    }
+}
+
 impl Solution {
     pub fn inorder_traversal(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
-        let _ = root;
-        todo!("implement Solution::inorder_traversal")
+        let mut inorder_values: Vec<i32> = Vec::new();
+
+        helper_inorder(&root, &mut inorder_values);
+
+        inorder_values
     }
 }
